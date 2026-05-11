@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.core.settings import settings
+from app.services.ingestion_service import IngestionService
 from app.services.vector_store_service import VectorStoreService
 
 
@@ -10,6 +11,7 @@ app = FastAPI(
     description="API du système RAG événements culturels"
 )
 
+ingestion_service = IngestionService()
 vector_store_service = VectorStoreService()
 
 
@@ -45,3 +47,14 @@ def get_config():
 def rag_status():
 
     return vector_store_service.get_status()
+
+
+@app.get("/documents")
+def get_documents():
+
+    documents = ingestion_service.load_documents()
+
+    return {
+        "count": len(documents),
+        "documents": documents
+    }

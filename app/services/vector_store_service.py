@@ -9,7 +9,7 @@ class VectorStoreService:
 
     def get_status(self):
 
-        documents = self.ingestion_service.load_sample_documents()
+        documents = self.ingestion_service.load_documents()
 
         return {
             "vector_store": "faiss",

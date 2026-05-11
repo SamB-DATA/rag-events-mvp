@@ -1,25 +1,28 @@
+import json
+from pathlib import Path
+
 from app.models.document import EventDocument
 
 
 class IngestionService:
 
-    def load_sample_documents(self) -> list[EventDocument]:
+    def __init__(self):
 
-        return [
-            EventDocument(
-                id="event_001",
-                title="Festival de jazz à Paris",
-                description="Un festival de jazz avec plusieurs artistes internationaux.",
-                location="Paris",
-                date="2026-06-15",
-                source="sample"
-            ),
-            EventDocument(
-                id="event_002",
-                title="Exposition d’art contemporain",
-                description="Une exposition autour de l’art moderne et des installations numériques.",
-                location="Lyon",
-                date="2026-07-02",
-                source="sample"
+        self.data_path = Path("data/raw/events_sample.json")
+
+    def load_documents(self) -> list[EventDocument]:
+
+        if not self.data_path.exists():
+            raise FileNotFoundError(
+                f"Le fichier de données est introuvable : {self.data_path}"
             )
+
+        with open(self.data_path, "r", encoding="utf-8") as file:
+            raw_documents = json.load(file)
+
+        documents = [
+            EventDocument(**document)
+            for document in raw_documents
         ]
+
+        return documents
