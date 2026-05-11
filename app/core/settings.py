@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+
 import yaml
 from dotenv import load_dotenv
 
@@ -15,7 +17,7 @@ class Settings:
 
         config_path = BASE_DIR / "config" / "app.yaml"
 
-        with open(config_path, "r") as file:
+        with open(config_path, "r", encoding="utf-8") as file:
             self.config = yaml.safe_load(file)
 
     @property
@@ -32,11 +34,21 @@ class Settings:
 
     @property
     def llm_model(self):
-        return self.config["llm"]["model"]
+        return os.getenv(
+            "MISTRAL_MODEL",
+            self.config["llm"]["model"]
+        )
+
+    @property
+    def mistral_api_key(self):
+        return os.getenv("MISTRAL_API_KEY")
 
     @property
     def vector_store_path(self):
-        return self.config["vector_store"]["path"]
+        return os.getenv(
+            "VECTOR_DB_PATH",
+            self.config["vector_store"]["path"]
+        )
 
 
 settings = Settings()

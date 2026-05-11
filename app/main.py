@@ -85,3 +85,12 @@ def rag_answer(search_query: SearchQuery):
         query=search_query.query,
         top_k=search_query.top_k
     )
+
+
+@app.post("/rag/ask")
+def rag_ask(search_query: SearchQuery):
+
+    return rag_service.answer_query(
+        query=search_query.query,
+        top_k=search_query.top_k
+    )

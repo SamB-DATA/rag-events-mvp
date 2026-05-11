@@ -1,3 +1,4 @@
+from app.services.llm_service import LLMService
 from app.services.vector_store_service import VectorStoreService
 
 
@@ -6,6 +7,7 @@ class RagService:
     def __init__(self):
 
         self.vector_store_service = VectorStoreService()
+        self.llm_service = LLMService()
 
     def answer_query(self, query: str, top_k: int = 2):
 
@@ -29,24 +31,29 @@ class RagService:
             for result in results
         ]
 
-        answer_lines = []
+        context_lines = []
 
         for document in documents:
 
             line = (
-                f"- {document.title} à {document.location} "
-                f"le {document.date}"
+                f"Titre : {document.title}\n"
+                f"Description : {document.description}\n"
+                f"Lieu : {document.location}\n"
+                f"Date : {document.date}\n"
+                f"Source : {document.source}\n"
             )
 
-            answer_lines.append(line)
+            context_lines.append(line)
 
-        final_answer = (
-            "Voici les événements les plus pertinents :\n\n"
-            + "\n".join(answer_lines)
+        context = "\n---\n".join(context_lines)
+
+        answer = self.llm_service.generate_answer(
+            question=query,
+            context=context
         )
 
         return {
             "query": query,
-            "answer": final_answer,
+            "answer": answer,
             "sources": documents
         }
