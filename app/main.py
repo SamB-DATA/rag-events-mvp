@@ -43,12 +43,6 @@ def get_config():
     }
 
 
-@app.get("/rag/status")
-def rag_status():
-
-    return vector_store_service.get_status()
-
-
 @app.get("/documents")
 def get_documents():
 
@@ -58,3 +52,15 @@ def get_documents():
         "count": len(documents),
         "documents": documents
     }
+
+
+@app.post("/rag/build-index")
+def build_rag_index():
+
+    return vector_store_service.build_index()
+
+
+@app.get("/rag/status")
+def rag_status():
+
+    return vector_store_service.get_status()
