@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.core.settings import settings
+from app.models.query import SearchQuery
 from app.services.ingestion_service import IngestionService
 from app.services.vector_store_service import VectorStoreService
 
@@ -64,3 +65,12 @@ def build_rag_index():
 def rag_status():
 
     return vector_store_service.get_status()
+
+
+@app.post("/rag/search")
+def search_events(search_query: SearchQuery):
+
+    return vector_store_service.search(
+        query=search_query.query,
+        top_k=search_query.top_k
+    )

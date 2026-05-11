@@ -50,6 +50,49 @@ class VectorStoreService:
             "status": "index_created"
         }
 
+    def search(self, query: str, top_k: int = 2):
+
+        if not Path(self.index_path).exists():
+            raise FileNotFoundError(
+                "L'index FAISS est introuvable. Lancez d'abord /rag/build-index."
+            )
+
+        documents = self.ingestion_service.load_documents()
+
+        index = faiss.read_index(self.index_path)
+
+        query_embedding = self.embedding_service.create_embedding(query)
+
+        query_array = np.array(
+            [query_embedding],
+            dtype="float32"
+        )
+
+        distances, indices = index.search(query_array, top_k)
+
+        results = []
+
+        for position, document_index in enumerate(indices[0]):
+
+            if document_index == -1:
+                continue
+
+            document = documents[document_index]
+
+            results.append(
+                {
+                    "rank": position + 1,
+                    "score": float(distances[0][position]),
+                    "document": document
+                }
+            )
+
+        return {
+            "query": query,
+            "top_k": top_k,
+            "results": results
+        }
+
     def get_status(self):
 
         index_exists = Path(self.index_path).exists()
