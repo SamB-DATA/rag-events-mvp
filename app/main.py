@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.core.settings import settings
+from app.services.vector_store_service import VectorStoreService
 
 
 app = FastAPI(
@@ -8,6 +9,8 @@ app = FastAPI(
     version=settings.app_version,
     description="API du système RAG événements culturels"
 )
+
+vector_store_service = VectorStoreService()
 
 
 @app.get("/")
@@ -36,3 +39,9 @@ def get_config():
         "llm_model": settings.llm_model,
         "vector_store": settings.vector_store_path
     }
+
+
+@app.get("/rag/status")
+def rag_status():
+
+    return vector_store_service.get_status()
