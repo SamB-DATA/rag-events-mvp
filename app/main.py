@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 
 from app.core.settings import settings
+from app.models.chat import ChatQuery
 from app.models.query import SearchQuery
+from app.services.chat_service import ChatService
 from app.services.ingestion_service import IngestionService
 from app.services.rag_service import RagService
 from app.services.vector_store_service import VectorStoreService
@@ -16,6 +18,7 @@ app = FastAPI(
 ingestion_service = IngestionService()
 vector_store_service = VectorStoreService()
 rag_service = RagService()
+chat_service = ChatService()
 
 
 @app.get("/")
@@ -94,3 +97,25 @@ def rag_ask(search_query: SearchQuery):
         query=search_query.query,
         top_k=search_query.top_k
     )
+
+
+@app.post("/chat/ask")
+def chat_ask(chat_query: ChatQuery):
+
+    return chat_service.ask(
+        session_id=chat_query.session_id,
+        query=chat_query.query,
+        top_k=chat_query.top_k
+    )
+
+
+@app.get("/chat/history/{session_id}")
+def chat_history(session_id: str):
+
+    return chat_service.get_history(session_id)
+
+
+@app.delete("/chat/history/{session_id}")
+def clear_chat_history(session_id: str):
+
+    return chat_service.clear_history(session_id)
