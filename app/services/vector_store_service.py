@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import faiss
 import numpy as np
 
 from app.services.embedding_service import EmbeddingService
@@ -14,7 +13,7 @@ class VectorStoreService:
         self.ingestion_service = IngestionService()
         self.embedding_service = EmbeddingService()
 
-        self.index_path = "vector_store/faiss.index"
+        self.index_path = "vector_store/light_index.npy"
 
     def build_index(self):
 
@@ -35,54 +34,42 @@ class VectorStoreService:
             dtype="float32"
         )
 
-        dimension = embeddings_array.shape[1]
-
-        index = faiss.IndexFlatL2(dimension)
-
-        index.add(embeddings_array)
-
-        faiss.write_index(index, self.index_path)
+        np.save(self.index_path, embeddings_array)
 
         return {
             "documents_indexed": len(documents),
-            "embedding_dimension": dimension,
+            "embedding_dimension": embeddings_array.shape[1],
             "index_path": self.index_path,
-            "status": "index_created"
+            "status": "light_index_created"
         }
 
     def search(self, query: str, top_k: int = 2):
 
         if not Path(self.index_path).exists():
             raise FileNotFoundError(
-                "L'index FAISS est introuvable. Lancez d'abord /rag/build-index."
+                "L'index léger est introuvable. Lancez d'abord /rag/build-index."
             )
 
         documents = self.ingestion_service.load_documents()
 
-        index = faiss.read_index(self.index_path)
+        index = np.load(self.index_path)
 
         query_embedding = self.embedding_service.create_embedding(query)
 
-        query_array = np.array(
-            [query_embedding],
-            dtype="float32"
-        )
+        scores = index @ query_embedding
 
-        distances, indices = index.search(query_array, top_k)
+        ranked_indices = np.argsort(scores)[::-1][:top_k]
 
         results = []
 
-        for position, document_index in enumerate(indices[0]):
+        for position, document_index in enumerate(ranked_indices):
 
-            if document_index == -1:
-                continue
-
-            document = documents[document_index]
+            document = documents[int(document_index)]
 
             results.append(
                 {
                     "rank": position + 1,
-                    "score": float(distances[0][position]),
+                    "score": float(scores[document_index]),
                     "document": document
                 }
             )
@@ -98,7 +85,7 @@ class VectorStoreService:
         index_exists = Path(self.index_path).exists()
 
         return {
-            "vector_store": "faiss",
+            "vector_store": "light_numpy",
             "index_exists": index_exists,
             "index_path": self.index_path
         }
