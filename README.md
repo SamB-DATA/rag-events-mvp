@@ -2,30 +2,52 @@
 
 ## Présentation du projet
 
-Ce projet est le MVP d’un système RAG dédié à la recommandation d’événements culturels.
+Ce projet correspond au MVP d’un système RAG dédié à la recommandation d’événements culturels.
 
-Je suis parti d’un POC réalisé dans le projet 11, puis j’ai construit une version plus propre, plus structurée et plus proche d’un MVP exploitable.
+Je suis parti d’un premier POC développé dans le projet 11 puis j’ai transformé cette première version en application backend plus structurée, conteneurisée et préparée pour le cloud.
 
-L’objectif est de transformer une première preuve de concept IA en application backend documentée, conteneurisée et préparée pour un futur déploiement cloud.
+L’objectif du projet est de démontrer ma capacité à faire évoluer une architecture IA locale vers un MVP plus proche d’un contexte réel de production.
 
-## Objectifs
+Le projet inclut :
+- une API FastAPI ;
+- une recherche sémantique ;
+- un moteur RAG ;
+- une intégration LLM avec Mistral ;
+- une mémoire conversationnelle ;
+- une architecture Docker ;
+- un déploiement AWS EC2 ;
+- une gestion des logs et du monitoring ;
+- une gestion sécurisée de la configuration.
 
-Ce projet me permet de démontrer ma capacité à construire une API FastAPI, intégrer un moteur de recherche vectoriel FAISS, générer des embeddings, connecter un LLM avec Mistral, gérer une mémoire conversationnelle simple, sécuriser la configuration avec un fichier .env, conteneuriser l’application avec Docker et préparer une architecture compatible avec AWS.
+## Objectifs du projet
+
+Avec ce projet, je démontre ma capacité à :
+
+- développer une API backend avec FastAPI ;
+- manipuler des embeddings ;
+- utiliser une recherche vectorielle ;
+- intégrer un modèle LLM ;
+- construire un pipeline RAG ;
+- gérer des conversations multi-tours ;
+- conteneuriser une application avec Docker ;
+- déployer une application sur AWS ;
+- sécuriser la configuration avec des variables d’environnement ;
+- mettre en place une stratégie de monitoring ;
+- gérer les contraintes de coûts cloud.
 
 ## Fonctionnalités principales
 
-- API REST avec FastAPI
-- Documentation automatique avec Swagger
+- API REST FastAPI
+- Documentation Swagger
 - Ingestion de données JSON
 - Génération d’embeddings
-- Index vectoriel FAISS
 - Recherche sémantique
-- Réponse RAG avec sources
-- Connexion Mistral
+- Réponses RAG avec Mistral
 - Mémoire conversationnelle locale
-- Logs applicatifs dans logs/app.log
-- Configuration YAML et variables d’environnement
-- Docker Compose pour l’exécution locale
+- Logs applicatifs
+- Docker Compose
+- Déploiement AWS EC2
+- Version cloud optimisée pour Free Tier AWS
 
 ## Architecture simplifiée
 
@@ -35,12 +57,12 @@ Utilisateur
 FastAPI
    |
    +-- Ingestion JSON
-   +-- Embeddings Sentence Transformers
-   +-- Index vectoriel FAISS
-   +-- Recherche des documents pertinents
+   +-- Embeddings
+   +-- Recherche vectorielle
    +-- Construction du prompt RAG
-   +-- Appel API Mistral
-   +-- Réponse avec sources
+   +-- API Mistral
+   +-- Mémoire conversationnelle
+   +-- Réponse utilisateur
 
 ## Structure du projet
 
@@ -75,49 +97,79 @@ FastAPI
 - Python
 - FastAPI
 - Uvicorn
-- Pydantic
-- Sentence Transformers
-- FAISS
-- Mistral API
 - Docker
 - Docker Compose
+- NumPy
+- Mistral API
 - YAML
-- Git / GitHub
+- Git
+- GitHub
+- AWS EC2
 
-## Lancement local
+## Développement local
 
-1. Cloner le projet
+### Cloner le projet
 
 git clone https://github.com/SamB-DATA/rag-events-mvp.git
+
 cd rag-events-mvp
 
-2. Créer le fichier .env
+### Créer le fichier .env
 
 cp .env.example .env
 
-Puis renseigner la clé Mistral si disponible :
-
-MISTRAL_API_KEY=your_mistral_api_key_here
-
-3. Lancer avec Docker
+### Lancer le projet
 
 docker compose up --build
 
-4. Ouvrir Swagger
+### Ouvrir Swagger
 
 http://localhost:8000/docs
 
+## Déploiement cloud AWS
+
+Le projet a été déployé sur une instance AWS EC2 Linux avec Docker.
+
+Une version allégée appelée `cloud-light` a été créée pour le cloud afin de respecter les contraintes du Free Tier AWS.
+
+Cette version retire les dépendances ML lourdes afin de :
+- réduire la taille Docker ;
+- limiter la consommation mémoire ;
+- éviter les coûts inutiles ;
+- rendre le déploiement compatible avec une instance EC2 micro.
+
+## Pourquoi une version cloud-light
+
+La version locale complète utilise :
+- Sentence Transformers ;
+- Torch ;
+- FAISS.
+
+Ces bibliothèques deviennent rapidement lourdes pour une petite instance EC2 gratuite.
+
+J’ai donc créé une version cloud optimisée afin de :
+- démontrer le déploiement cloud ;
+- conserver l’architecture RAG ;
+- respecter une contrainte de coût proche de zéro ;
+- adapter le projet à un environnement AWS Free Tier.
+
+Cette décision correspond à un arbitrage technique entre :
+- performance ;
+- coût ;
+- ressources disponibles ;
+- simplicité d’exploitation.
+
 ## Endpoints principaux
 
-GET /health - Vérifie que l’API fonctionne
-GET /documents - Affiche les documents chargés
-POST /rag/build-index - Construit l’index FAISS
-GET /rag/status - Vérifie l’état de l’index
-POST /rag/search - Lance une recherche sémantique
-POST /rag/ask - Génère une réponse RAG avec Mistral
-POST /chat/ask - Pose une question avec mémoire conversationnelle
-GET /chat/history/{session_id} - Consulte l’historique d’une session
-DELETE /chat/history/{session_id} - Supprime l’historique d’une session
+GET /health
+GET /documents
+POST /rag/build-index
+GET /rag/status
+POST /rag/search
+POST /rag/ask
+POST /chat/ask
+GET /chat/history/{session_id}
+DELETE /chat/history/{session_id}
 
 ## Exemple de requête
 
@@ -132,53 +184,74 @@ DELETE /chat/history/{session_id} - Supprime l’historique d’une session
 {
   "session_id": "samir-test",
   "query": "Je cherche un concert de musique",
-  "answer": "Voici les concerts qui correspondent à ta recherche...",
+  "answer": "Voici les concerts qui correspondent à votre recherche.",
   "sources": [
     {
-      "id": "event_003",
       "title": "Concert classique en plein air",
-      "location": "Bordeaux",
-      "date": "2026-08-10"
+      "location": "Bordeaux"
     }
-  ],
-  "history_size": 2
+  ]
 }
 
 ## Sécurité
 
-Le projet utilise un fichier .env non versionné, un fichier .env.example pour documenter les variables, un .gitignore pour exclure les secrets, les logs et les fichiers générés.
+Le projet utilise :
+- un fichier .env non versionné ;
+- un .gitignore ;
+- un utilisateur IAM AWS dédié ;
+- une séparation entre root AWS et IAM ;
+- des alertes budget AWS ;
+- un contrôle des accès réseau.
 
-Les clés API ne doivent jamais être poussées sur GitHub.
+## Monitoring
+
+Le projet inclut :
+- des logs applicatifs ;
+- un middleware de monitoring ;
+- des traces de requêtes API ;
+- un fichier logs/app.log.
 
 ## Limites actuelles du MVP
 
-Cette version reste un MVP. Les limites principales sont :
+Cette version reste un MVP.
 
-- mémoire conversationnelle stockée uniquement en mémoire locale
-- index FAISS généré localement
-- pas encore de base de données
-- pas encore de CI/CD
-- pas encore de déploiement AWS
-- pas encore de monitoring CloudWatch
-- pas encore d’évaluation RAG automatisée
+Limites actuelles :
+- mémoire conversationnelle stockée localement ;
+- pas de base de données ;
+- pas de CI/CD ;
+- pas de Kubernetes ;
+- pas de monitoring CloudWatch avancé ;
+- pas de stockage distribué ;
+- version cloud simplifiée pour Free Tier.
 
-## Prochaines étapes
+## Prochaines améliorations
 
-- Ajouter des tests unitaires et API
-- Ajouter une configuration Docker production
-- Préparer le déploiement AWS
-- Publier l’image Docker dans ECR
-- Déployer l’API sur ECS Fargate
-- Ajouter CloudWatch pour les logs
-- Ajouter GitHub Actions pour la CI/CD
-- Documenter les coûts cloud
-- Ajouter une évaluation qualité du RAG
+- ajouter des tests automatisés ;
+- mettre en place GitHub Actions ;
+- ajouter CloudWatch ;
+- ajouter HTTPS ;
+- ajouter un nom de domaine ;
+- ajouter une vraie base vectorielle ;
+- améliorer l’évaluation RAG ;
+- améliorer la sécurité cloud.
 
 ## Compétences démontrées
 
-Avec ce projet, je démontre des compétences en développement backend Python, API REST, conteneurisation, recherche vectorielle, intégration LLM, architecture RAG, gestion de configuration, logging, versionnement Git et préparation cloud.
+Avec ce projet, je démontre des compétences en :
+- développement backend Python ;
+- API REST ;
+- architecture RAG ;
+- intégration LLM ;
+- recherche vectorielle ;
+- Docker ;
+- Git/GitHub ;
+- cloud AWS ;
+- sécurité cloud ;
+- monitoring ;
+- gestion des coûts cloud.
 
 ## Auteur
 
 Samir Belasri
+
 Projet 13 - Parcours Data Engineer OpenClassrooms
